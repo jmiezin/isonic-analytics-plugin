@@ -1,5 +1,9 @@
 # iSonic Analytics Enrichment for Salesforce
 
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![PHP Version](https://img.shields.io/badge/PHP-8.0%2B-777BB4.svg)](https://www.php.net/)
+[![WordPress](https://img.shields.io/badge/WordPress-6.0%2B-21759B.svg)](https://wordpress.org/)
+
 Plugin WordPress qui enrichit automatiquement les soumissions Gravity Forms avec les données Matomo avant envoi à Salesforce.
 
 ## 🎯 Objectif
