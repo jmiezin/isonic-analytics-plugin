@@ -37,9 +37,14 @@ Capturer le contexte web complet de chaque Lead pour :
 
 ## 🚀 Installation
 
+**Installation complète détaillée** : Voir [INSTALLATION.md](INSTALLATION.md)
+
+**Installation rapide** :
 1. Uploader le plugin dans `/wp-content/plugins/`
 2. Activer via WordPress Admin
-3. Configurer dans **Réglages → iSonic Analytics**
+3. Créer Connected App Salesforce (voir guide)
+4. Configurer dans **Réglages → iSonic Analytics**
+5. Tester : `/wp-content/plugins/isonic-analytics-plugin/test-plugin.php`
 
 ## ⚙️ Configuration
 
@@ -96,9 +101,16 @@ Logs dans : `wp-content/debug.log`
 
 ## 📝 TODO
 
-- [ ] Implémenter OAuth2 complet pour Salesforce
-- [ ] Améliorer parsing des données Matomo
+### v1.0 (Fait ✅)
+- [x] OAuth2 complet pour Salesforce (Username-Password flow)
+- [x] Page settings admin complète
+- [x] Boutons "Test Connection" Matomo + Salesforce
+- [x] Script de test et validation
+
+### v1.1 (À venir)
+- [ ] Améliorer parsing des données Matomo (journey formaté)
 - [ ] Ajouter retry logic pour API failures
+- [ ] Queue système (fallback si SF down)
 - [ ] Dashboard WordPress avec métriques
 - [ ] Tests unitaires
 

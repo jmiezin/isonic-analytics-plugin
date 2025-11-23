@@ -133,4 +133,60 @@ class Isonic_Matomo_API {
             return sprintf( '%d sec', $secs );
         }
     }
+    
+    /**
+     * Test de connexion Matomo
+     */
+    public function test_connection() {
+        if ( empty( $this->matomo_url ) || empty( $this->auth_token ) ) {
+            return [
+                'success' => false,
+                'message' => 'Matomo URL or Auth Token is missing.',
+            ];
+        }
+        
+        // Tester un appel API simple
+        $api_url = add_query_arg( [
+            'module' => 'API',
+            'method' => 'SitesManager.getSiteFromId',
+            'idSite' => $this->site_id,
+            'format' => 'JSON',
+            'token_auth' => $this->auth_token,
+        ], $this->matomo_url . '/index.php' );
+        
+        $response = wp_remote_get( $api_url, [
+            'timeout' => 10,
+        ]);
+        
+        if ( is_wp_error( $response ) ) {
+            return [
+                'success' => false,
+                'message' => 'Connection failed: ' . $response->get_error_message(),
+            ];
+        }
+        
+        $body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body, true );
+        
+        // Vérifier s'il y a une erreur d'authentification
+        if ( isset( $data['result'] ) && $data['result'] === 'error' ) {
+            return [
+                'success' => false,
+                'message' => 'Authentication failed: ' . ( $data['message'] ?? 'Invalid token' ),
+            ];
+        }
+        
+        // Vérifier si on a bien les données du site
+        if ( isset( $data['idsite'] ) && $data['idsite'] == $this->site_id ) {
+            return [
+                'success' => true,
+                'message' => 'Connection successful! Site: ' . ( $data['name'] ?? 'Unknown' ),
+            ];
+        }
+        
+        return [
+            'success' => false,
+            'message' => 'Unexpected response from Matomo API',
+        ];
+    }
 }
