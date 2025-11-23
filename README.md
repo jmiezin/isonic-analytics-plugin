@@ -59,6 +59,12 @@ Chaque soumission de formulaire est envoyée aux **2 orgs en parallèle** avec l
 ## ⚙️ Configuration
 
 ### Matomo
+
+**🎉 Si vous utilisez le plugin Matomo WordPress** :
+- ✅ Détection automatique - Aucune configuration requise !
+- Juste renseigner le Site ID (généralement `1`)
+
+**Si vous utilisez un Matomo externe** :
 - URL : `https://matomo.isonic.fr`
 - Site ID : `1`
 - Auth Token : [Générer dans Matomo → Personal → Security]

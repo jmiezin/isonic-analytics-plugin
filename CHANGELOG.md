@@ -2,6 +2,51 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.2.0] - 2025-11-23
+
+### ✨ NOUVEAU : Support Natif Matomo WordPress Plugin
+
+Le plugin détecte et utilise **automatiquement** le plugin Matomo WordPress !
+
+**Fini les complications avec les tokens !** Si vous utilisez Matomo Analytics (plugin WordPress), le plugin iSonic l'utilise directement via PHP - plus besoin de URL ni de Auth Token.
+
+#### Ajouté
+
+**Détection Automatique Matomo WordPress**
+- Détecte si le plugin Matomo WordPress est installé
+- Utilise l'API PHP native Matomo au lieu de HTTP
+- Pas besoin de Auth Token
+- Configuration ultra-simple : juste le Site ID
+
+**Méthodes de Connexion**
+- `get_visitor_history_wordpress()` : Utilise API native Matomo WP
+- `get_visitor_history_http()` : Fallback vers API HTTP classique
+- `test_connection_wordpress()` : Test de connexion natif
+- `test_connection_http()` : Test de connexion HTTP
+
+**Interface Améliorée**
+- Message de détection dans Settings si Matomo WP installé
+- Champs URL/Token marqués comme "optionnels" si Matomo WP détecté
+- Instructions adaptées selon le type d'installation
+
+#### Modifié
+
+- `class-matomo-api.php` : Détection et support dual (natif + HTTP)
+- `admin/settings-page.php` : UI adaptative selon installation Matomo
+- `README.md` : Documentation Matomo WordPress
+
+#### Documentation
+
+- `MATOMO_WORDPRESS.md` : Guide complet Matomo WordPress Plugin
+- FAQ et troubleshooting
+
+#### Performance
+
+✅ **Avec Matomo WordPress** : Accès direct PHP (ultra-rapide)  
+✅ **Avec Matomo externe** : API HTTP (compatible)
+
+---
+
 ## [1.1.0] - 2025-11-23
 
 ### ✨ NOUVEAU : Multi-Org Salesforce

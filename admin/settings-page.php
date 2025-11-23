@@ -276,19 +276,6 @@ function isonic_analytics_register_settings() {
     );
     
     add_settings_field(
-        'isonic_matomo_url',
-        'URL Matomo',
-        'isonic_analytics_text_field',
-        'isonic-analytics',
-        'isonic_matomo_section',
-        [ 
-            'option_name' => 'isonic_matomo_url', 
-            'placeholder' => 'https://matomo.isonic.fr',
-            'description' => 'URL de votre instance Matomo (sans le /index.php)',
-        ]
-    );
-    
-    add_settings_field(
         'isonic_matomo_site_id',
         'Site ID',
         'isonic_analytics_text_field',
@@ -302,14 +289,27 @@ function isonic_analytics_register_settings() {
     );
     
     add_settings_field(
+        'isonic_matomo_url',
+        'URL Matomo (optionnel)',
+        'isonic_analytics_text_field',
+        'isonic-analytics',
+        'isonic_matomo_section',
+        [ 
+            'option_name' => 'isonic_matomo_url', 
+            'placeholder' => 'https://matomo.isonic.fr',
+            'description' => 'Requis uniquement pour Matomo externe (pas le plugin WordPress)',
+        ]
+    );
+    
+    add_settings_field(
         'isonic_matomo_auth_token',
-        'Auth Token',
+        'Auth Token (optionnel)',
         'isonic_analytics_password_field',
         'isonic-analytics',
         'isonic_matomo_section',
         [ 
             'option_name' => 'isonic_matomo_auth_token',
-            'description' => 'Token d\'authentification (Matomo → Personal → Security → Auth Tokens)',
+            'description' => 'Requis uniquement pour Matomo externe (Matomo → Personal → Security)',
         ]
     );
     
@@ -500,7 +500,16 @@ function isonic_analytics_register_settings() {
 }
 
 function isonic_analytics_matomo_section_callback() {
-    echo '<p>Configurez l\'accès à l\'API Matomo pour récupérer les données analytics des visiteurs.</p>';
+    // Détecter si Matomo WordPress Plugin est installé
+    if ( class_exists( '\WpMatomo\Tracker' ) || class_exists( 'WpMatomo' ) || defined( 'MATOMO_ANALYTICS_FILE' ) ) {
+        echo '<div style="background: #d7f8e8; border-left: 4px solid #00a32a; padding: 12px; margin: 10px 0;">';
+        echo '<p style="margin: 0;"><strong>✅ Matomo WordPress Plugin détecté !</strong></p>';
+        echo '<p style="margin: 5px 0 0 0;">Le plugin utilisera <strong>automatiquement</strong> Matomo sans configuration supplémentaire. Les champs URL et Auth Token ci-dessous sont <strong>optionnels</strong> (utiles uniquement si vous utilisez un Matomo externe).</p>';
+        echo '</div>';
+    } else {
+        echo '<p>Configurez l\'accès à l\'API Matomo pour récupérer les données analytics des visiteurs.</p>';
+        echo '<p><em>Si vous utilisez le plugin Matomo WordPress, il sera détecté automatiquement.</em></p>';
+    }
 }
 
 function isonic_analytics_salesforce_primary_section_callback() {
