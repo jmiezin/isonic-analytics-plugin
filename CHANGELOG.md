@@ -2,6 +2,72 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.1.0] - 2025-11-23
+
+### ✨ NOUVEAU : Multi-Org Salesforce
+
+Le plugin supporte maintenant l'**envoi simultané à 2 orgs Salesforce** !
+
+**Cas d'usage principal** : Migration entre anciennes et nouvelles orgs
+- **Primary Org** : Nouvelle org de production (toujours active)
+- **Secondary Org** : Ancienne org (désactivable une fois la migration terminée)
+
+Chaque soumission de formulaire Gravity Forms est maintenant envoyée aux **2 orgs en parallèle** avec les Campaign IDs correspondants pour chaque org.
+
+#### Ajouté
+
+**Configuration Dual-Org**
+- Settings pour Primary Org (nouvelle org production)
+  - Instance URL, Consumer Key, Consumer Secret, Username, Password, Security Token
+  - Toggle d'activation/désactivation
+- Settings pour Secondary Org (ancienne org migration)
+  - Instance URL, Consumer Key, Consumer Secret, Username, Password, Security Token
+  - Toggle d'activation/désactivation
+- Boutons "Test Connection" séparés pour chaque org
+- Affichage des Campaign IDs pour les 2 orgs
+
+**Constantes Campaign IDs**
+- `ISONIC_PRIMARY_CAMPAIGN_SITE_WEB` : 701Jv00000oEi1EIAS
+- `ISONIC_PRIMARY_CAMPAIGN_CONTENU_PEDAGOGIQUE` : 701Jv00000oEgv7IAC
+- `ISONIC_SECONDARY_CAMPAIGN_SITE_WEB` : 7013X000001msrWQAQ
+- `ISONIC_SECONDARY_CAMPAIGN_CONTENU_PEDAGOGIQUE` : 701IV00000xTZBhYAO
+
+**Architecture**
+- `Isonic_Salesforce_API` accepte maintenant un paramètre `$org_type` ('primary' ou 'secondary')
+- Cache OAuth séparé par org (clés transient différentes)
+- Logs préfixés `[PRIMARY]` ou `[SECONDARY]` pour traçabilité
+- `Isonic_Form_Enricher::send_to_org()` : nouvelle méthode privée pour envoyer à une org spécifique
+- `Isonic_Campaign_Mapper::get_campaign_id()` accepte `$org_type` pour retourner les bons Campaign IDs
+
+#### Modifié
+
+- `class-salesforce-api.php` : Support multi-org avec org_type
+- `class-form-enricher.php` : Envoie aux 2 orgs si activées
+- `class-campaign-mapper.php` : Mapping des campaigns par org
+- `admin/settings-page.php` : Interface complète pour 2 orgs
+- `isonic-analytics.php` : Constantes pour les 2 orgs
+- `README.md` : Documentation dual-org
+
+#### Workflow de Migration
+
+1. **Phase 1 - Migration en cours**
+   - ✅ Activer Primary Org (nouvelle)
+   - ✅ Activer Secondary Org (ancienne)
+   - Chaque formulaire crée 2 Leads (1 dans chaque org)
+
+2. **Phase 2 - Migration terminée**
+   - ✅ Primary Org reste activée
+   - ❌ Désactiver Secondary Org
+   - Les formulaires créent uniquement des Leads dans Primary Org
+
+#### Backward Compatibility
+
+- Les constantes legacy (`ISONIC_CAMPAIGN_SITE_WEB`, `ISONIC_CAMPAIGN_CONTENU_PEDAGOGIQUE`) fonctionnent toujours
+- Migration automatique depuis version 1.0.0
+- Pas de breaking changes
+
+---
+
 ## [1.0.0] - 2025-11-23
 
 ### ✨ Ajouté
