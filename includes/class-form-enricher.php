@@ -15,7 +15,7 @@ class Isonic_Form_Enricher {
     }
     
     /**
-     * Enrichit et envoie les données à Salesforce
+     * Enrichit et envoie les données à Salesforce (Primary + Secondary orgs)
      */
     public static function enrich_and_send( $entry, $form ) {
         
@@ -29,15 +29,7 @@ class Isonic_Form_Enricher {
         $matomo_api = new Isonic_Matomo_API();
         $matomo_data = $matomo_api->get_visitor_history();
         
-        // 2. Déterminer Campaign Salesforce
-        $campaign_id = Isonic_Campaign_Mapper::get_campaign_id( 
-            $form['id'], 
-            $form['title'] 
-        );
-        
-        $campaign_name = Isonic_Campaign_Mapper::get_campaign_name( $campaign_id );
-        
-        // 3. Construire payload Salesforce
+        // 2. Construire payload Salesforce (commun aux 2 orgs)
         $lead_data = [
             // Champs standard (à adapter selon vos formulaires)
             'FirstName' => rgar( $entry, '1' ) ?? '',
@@ -65,11 +57,43 @@ class Isonic_Form_Enricher {
             'Form_Type__c' => self::detect_form_type( $form['id'], $form['title'] ),
         ];
         
-        // 4. Envoyer à Salesforce
-        $sf_api = new Isonic_Salesforce_API();
+        // 3. Envoyer à PRIMARY ORG (Nouvelle org - Production)
+        if ( get_option( 'isonic_sf_primary_enabled', false ) ) {
+            self::send_to_org( 'primary', $form, $lead_data );
+        } else {
+            Isonic_Logger::log_warning( '[PRIMARY] Org disabled - skipping' );
+        }
+        
+        // 4. Envoyer à SECONDARY ORG (Ancienne org - Migration)
+        if ( get_option( 'isonic_sf_secondary_enabled', false ) ) {
+            self::send_to_org( 'secondary', $form, $lead_data );
+        } else {
+            Isonic_Logger::log_info( '[SECONDARY] Org disabled - skipping (normal si migration terminée)' );
+        }
+    }
+    
+    /**
+     * Envoie le Lead à une org Salesforce spécifique
+     *
+     * @param string $org_type 'primary' or 'secondary'
+     * @param array $form Gravity Forms form data
+     * @param array $lead_data Lead data to send
+     */
+    private static function send_to_org( $org_type, $form, $lead_data ) {
+        // Déterminer Campaign selon org
+        $campaign_id = Isonic_Campaign_Mapper::get_campaign_id( 
+            $form['id'], 
+            $form['title'],
+            $org_type
+        );
+        
+        $campaign_name = Isonic_Campaign_Mapper::get_campaign_name( $campaign_id );
+        
+        // Créer instance Salesforce API pour cette org
+        $sf_api = new Isonic_Salesforce_API( $org_type );
         $lead_id = $sf_api->create_lead( $lead_data );
         
-        // 5. Créer CampaignMember
+        // Créer CampaignMember
         if ( $lead_id && $campaign_id ) {
             $sf_api->create_campaign_member( $campaign_id, $lead_id );
             
@@ -79,6 +103,13 @@ class Isonic_Form_Enricher {
                 $lead_id, 
                 $campaign_name 
             );
+        } else {
+            Isonic_Logger::log_error( sprintf(
+                '[%s] Failed to create Lead or CampaignMember for form "%s" (ID: %d)',
+                strtoupper( $org_type ),
+                $form['title'],
+                $form['id']
+            ));
         }
     }
     

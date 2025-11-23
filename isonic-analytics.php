@@ -27,10 +27,24 @@ define( 'ISONIC_ANALYTICS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ISONIC_ANALYTICS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * Campaign IDs Salesforce (Production)
+ * Campaign IDs Salesforce - NOUVELLE ORG (Primary - Production)
+ * URL: https://isonic-ai.my.salesforce.com
  */
-define( 'ISONIC_CAMPAIGN_SITE_WEB', '701Jv00000oEi1EIAS' );
-define( 'ISONIC_CAMPAIGN_CONTENU_PEDAGOGIQUE', '701Jv00000oEgv7IAC' );
+define( 'ISONIC_PRIMARY_CAMPAIGN_SITE_WEB', '701Jv00000oEi1EIAS' );
+define( 'ISONIC_PRIMARY_CAMPAIGN_CONTENU_PEDAGOGIQUE', '701Jv00000oEgv7IAC' );
+
+/**
+ * Campaign IDs Salesforce - ANCIENNE ORG (Secondary - Migration)
+ * URL: https://isonic.lightning.force.com/
+ */
+define( 'ISONIC_SECONDARY_CAMPAIGN_SITE_WEB', '7013X000001msrWQAQ' );
+define( 'ISONIC_SECONDARY_CAMPAIGN_CONTENU_PEDAGOGIQUE', '701IV00000xTZBhYAO' );
+
+/**
+ * Backward compatibility (utilise Primary par défaut)
+ */
+define( 'ISONIC_CAMPAIGN_SITE_WEB', ISONIC_PRIMARY_CAMPAIGN_SITE_WEB );
+define( 'ISONIC_CAMPAIGN_CONTENU_PEDAGOGIQUE', ISONIC_PRIMARY_CAMPAIGN_CONTENU_PEDAGOGIQUE );
 
 /**
  * Gravity Forms ID pour "Inscription Isonic"

@@ -13,6 +13,16 @@ Capturer le contexte web complet de chaque Lead pour :
 - Personnaliser l'approche commerciale (connaître l'intérêt réel)
 - Mesurer le ROI des campagnes web
 
+## 🔄 **NOUVEAU : Multi-Org Salesforce**
+
+Le plugin supporte maintenant **2 orgs Salesforce simultanément** !
+
+**Cas d'usage** : Migration entre anciennes et nouvelles orgs
+- **Primary Org** : Nouvelle org de production (toujours active)
+- **Secondary Org** : Ancienne org (désactivable une fois la migration terminée)
+
+Chaque soumission de formulaire est envoyée aux **2 orgs en parallèle** avec les bons Campaign IDs pour chaque org.
+
 ## 📊 Données Capturées (13 champs)
 
 ### Parcours Web
@@ -60,10 +70,17 @@ Capturer le contexte web complet de chaque Lead pour :
 
 ## 📋 Campaigns Salesforce
 
+### Primary Org (Production)
 | Formulaire | Campaign Salesforce | ID |
 |-----------|---------------------|-----|
 | Inscription Isonic | Contenu pédagogique | 701Jv00000oEgv7IAC |
 | Autres formulaires | Site web isonic.fr | 701Jv00000oEi1EIAS |
+
+### Secondary Org (Migration - optionnel)
+| Formulaire | Campaign Salesforce | ID |
+|-----------|---------------------|-----|
+| Inscription Isonic | Contenu pédagogique | 701IV00000xTZBhYAO |
+| Autres formulaires | Site web isonic.fr | 7013X000001msrWQAQ |
 
 ## 🔧 Développement
 

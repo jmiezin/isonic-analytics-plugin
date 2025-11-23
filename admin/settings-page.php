@@ -28,12 +28,21 @@ function isonic_analytics_render_settings_page() {
         echo '</div>';
     }
     
-    if ( isset( $_POST['test_salesforce'] ) ) {
-        check_admin_referer( 'isonic_test_salesforce' );
-        $sf_api = new Isonic_Salesforce_API();
+    if ( isset( $_POST['test_salesforce_primary'] ) ) {
+        check_admin_referer( 'isonic_test_salesforce_primary' );
+        $sf_api = new Isonic_Salesforce_API( 'primary' );
         $result = $sf_api->test_connection();
         echo '<div class="notice notice-' . ( $result['success'] ? 'success' : 'error' ) . ' is-dismissible">';
-        echo '<p><strong>Salesforce Test:</strong> ' . esc_html( $result['message'] ) . '</p>';
+        echo '<p><strong>Salesforce PRIMARY Test:</strong> ' . esc_html( $result['message'] ) . '</p>';
+        echo '</div>';
+    }
+    
+    if ( isset( $_POST['test_salesforce_secondary'] ) ) {
+        check_admin_referer( 'isonic_test_salesforce_secondary' );
+        $sf_api = new Isonic_Salesforce_API( 'secondary' );
+        $result = $sf_api->test_connection();
+        echo '<div class="notice notice-' . ( $result['success'] ? 'success' : 'error' ) . ' is-dismissible">';
+        echo '<p><strong>Salesforce SECONDARY Test:</strong> ' . esc_html( $result['message'] ) . '</p>';
         echo '</div>';
     }
     
@@ -68,12 +77,23 @@ function isonic_analytics_render_settings_page() {
                 </td>
             </tr>
             <tr>
-                <th scope="row">Salesforce API</th>
+                <th scope="row">Salesforce PRIMARY API</th>
                 <td>
                     <form method="post" style="display: inline;">
-                        <?php wp_nonce_field( 'isonic_test_salesforce' ); ?>
-                        <button type="submit" name="test_salesforce" class="button button-secondary">
-                            🔍 Tester Salesforce
+                        <?php wp_nonce_field( 'isonic_test_salesforce_primary' ); ?>
+                        <button type="submit" name="test_salesforce_primary" class="button button-secondary">
+                            🔍 Tester Primary Org
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Salesforce SECONDARY API</th>
+                <td>
+                    <form method="post" style="display: inline;">
+                        <?php wp_nonce_field( 'isonic_test_salesforce_secondary' ); ?>
+                        <button type="submit" name="test_salesforce_secondary" class="button button-secondary">
+                            🔍 Tester Secondary Org
                         </button>
                     </form>
                 </td>
@@ -83,12 +103,14 @@ function isonic_analytics_render_settings_page() {
         <hr style="margin: 30px 0;">
         
         <h2>📊 Campaigns Salesforce</h2>
-        <p>Mapping automatique : Formulaires → Campaigns</p>
+        <p>Mapping automatique : Formulaires → Campaigns (2 orgs)</p>
+        
+        <h3>🟢 PRIMARY ORG (Nouvelle - Production)</h3>
         <table class="widefat">
             <thead>
                 <tr>
                     <th>Formulaire</th>
-                    <th>Campaign Salesforce</th>
+                    <th>Campaign</th>
                     <th>ID</th>
                 </tr>
             </thead>
@@ -96,12 +118,35 @@ function isonic_analytics_render_settings_page() {
                 <tr>
                     <td><strong>Inscription Isonic</strong> (Form ID: 1)</td>
                     <td>Contenu pédagogique</td>
-                    <td><code><?php echo ISONIC_CAMPAIGN_CONTENU_PEDAGOGIQUE; ?></code></td>
+                    <td><code><?php echo ISONIC_PRIMARY_CAMPAIGN_CONTENU_PEDAGOGIQUE; ?></code></td>
                 </tr>
                 <tr>
                     <td><strong>Tous les autres formulaires</strong></td>
                     <td>Site web isonic.fr</td>
-                    <td><code><?php echo ISONIC_CAMPAIGN_SITE_WEB; ?></code></td>
+                    <td><code><?php echo ISONIC_PRIMARY_CAMPAIGN_SITE_WEB; ?></code></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3 style="margin-top: 20px;">🔄 SECONDARY ORG (Ancienne - Migration)</h3>
+        <table class="widefat">
+            <thead>
+                <tr>
+                    <th>Formulaire</th>
+                    <th>Campaign</th>
+                    <th>ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Inscription Isonic</strong> (Form ID: 1)</td>
+                    <td>Contenu pédagogique</td>
+                    <td><code><?php echo ISONIC_SECONDARY_CAMPAIGN_CONTENU_PEDAGOGIQUE; ?></code></td>
+                </tr>
+                <tr>
+                    <td><strong>Tous les autres formulaires</strong></td>
+                    <td>Site web isonic.fr</td>
+                    <td><code><?php echo ISONIC_SECONDARY_CAMPAIGN_SITE_WEB; ?></code></td>
                 </tr>
             </tbody>
         </table>
@@ -127,13 +172,25 @@ function isonic_analytics_render_settings_page() {
                 </td>
             </tr>
             <tr>
-                <th scope="row">Salesforce Integration</th>
+                <th scope="row">Salesforce PRIMARY (Production)</th>
                 <td>
                     <?php 
-                    if ( get_option( 'isonic_salesforce_enabled' ) ) {
+                    if ( get_option( 'isonic_sf_primary_enabled' ) ) {
                         echo '<span style="color: green;">✅ Activé</span>';
                     } else {
                         echo '<span style="color: red;">❌ Désactivé</span>';
+                    }
+                    ?>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Salesforce SECONDARY (Migration)</th>
+                <td>
+                    <?php 
+                    if ( get_option( 'isonic_sf_secondary_enabled' ) ) {
+                        echo '<span style="color: orange;">🔄 Activé (migration en cours)</span>';
+                    } else {
+                        echo '<span style="color: gray;">⚪ Désactivé (migration terminée)</span>';
                     }
                     ?>
                 </td>
@@ -174,7 +231,25 @@ function isonic_analytics_register_settings() {
     register_setting( 'isonic_analytics_settings', 'isonic_matomo_site_id' );
     register_setting( 'isonic_analytics_settings', 'isonic_matomo_auth_token' );
     
-    // Salesforce settings
+    // Salesforce PRIMARY org settings
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_enabled' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_instance_url' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_consumer_key' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_consumer_secret' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_username' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_password' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_primary_security_token' );
+    
+    // Salesforce SECONDARY org settings (ancienne org - migration)
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_enabled' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_instance_url' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_consumer_key' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_consumer_secret' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_username' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_password' );
+    register_setting( 'isonic_analytics_settings', 'isonic_sf_secondary_security_token' );
+    
+    // Legacy settings (backward compatibility)
     register_setting( 'isonic_analytics_settings', 'isonic_salesforce_enabled' );
     register_setting( 'isonic_analytics_settings', 'isonic_sf_instance_url' );
     register_setting( 'isonic_analytics_settings', 'isonic_sf_consumer_key' );
@@ -238,93 +313,187 @@ function isonic_analytics_register_settings() {
         ]
     );
     
-    // SALESFORCE SECTION
+    // SALESFORCE PRIMARY ORG SECTION (Nouvelle org - Production)
     add_settings_section(
-        'isonic_sf_section',
-        '☁️ Configuration Salesforce',
-        'isonic_analytics_salesforce_section_callback',
+        'isonic_sf_primary_section',
+        '☁️ Salesforce PRIMARY (Nouvelle Org - Production)',
+        'isonic_analytics_salesforce_primary_section_callback',
         'isonic-analytics'
     );
     
     add_settings_field(
-        'isonic_salesforce_enabled',
-        'Activer Salesforce',
+        'isonic_sf_primary_enabled',
+        'Activer Primary Org',
         'isonic_analytics_checkbox_field',
         'isonic-analytics',
-        'isonic_sf_section',
-        [ 'option_name' => 'isonic_salesforce_enabled' ]
+        'isonic_sf_primary_section',
+        [ 'option_name' => 'isonic_sf_primary_enabled' ]
     );
     
     add_settings_field(
-        'isonic_sf_instance_url',
+        'isonic_sf_primary_instance_url',
         'Instance URL',
         'isonic_analytics_text_field',
         'isonic-analytics',
-        'isonic_sf_section',
+        'isonic_sf_primary_section',
         [ 
-            'option_name' => 'isonic_sf_instance_url', 
+            'option_name' => 'isonic_sf_primary_instance_url', 
             'placeholder' => 'https://isonic-ai.my.salesforce.com',
-            'description' => 'URL de votre org Salesforce',
+            'description' => 'URL de la nouvelle org Salesforce',
         ]
     );
     
     add_settings_field(
-        'isonic_sf_consumer_key',
+        'isonic_sf_primary_consumer_key',
         'Consumer Key',
         'isonic_analytics_text_field',
         'isonic-analytics',
-        'isonic_sf_section',
+        'isonic_sf_primary_section',
         [ 
-            'option_name' => 'isonic_sf_consumer_key',
+            'option_name' => 'isonic_sf_primary_consumer_key',
             'description' => 'Consumer Key de la Connected App',
         ]
     );
     
     add_settings_field(
-        'isonic_sf_consumer_secret',
+        'isonic_sf_primary_consumer_secret',
         'Consumer Secret',
         'isonic_analytics_password_field',
         'isonic-analytics',
-        'isonic_sf_section',
+        'isonic_sf_primary_section',
         [ 
-            'option_name' => 'isonic_sf_consumer_secret',
+            'option_name' => 'isonic_sf_primary_consumer_secret',
             'description' => 'Consumer Secret de la Connected App',
         ]
     );
     
     add_settings_field(
-        'isonic_sf_username',
+        'isonic_sf_primary_username',
         'Username',
         'isonic_analytics_text_field',
         'isonic-analytics',
-        'isonic_sf_section',
+        'isonic_sf_primary_section',
         [ 
-            'option_name' => 'isonic_sf_username',
+            'option_name' => 'isonic_sf_primary_username',
             'placeholder' => 'j.miezin@isonic.fr',
             'description' => 'Email de l\'utilisateur Salesforce',
         ]
     );
     
     add_settings_field(
-        'isonic_sf_password',
+        'isonic_sf_primary_password',
         'Password',
         'isonic_analytics_password_field',
         'isonic-analytics',
-        'isonic_sf_section',
+        'isonic_sf_primary_section',
         [ 
-            'option_name' => 'isonic_sf_password',
+            'option_name' => 'isonic_sf_primary_password',
             'description' => 'Mot de passe Salesforce (sans le Security Token)',
         ]
     );
     
     add_settings_field(
-        'isonic_sf_security_token',
+        'isonic_sf_primary_security_token',
         'Security Token',
         'isonic_analytics_password_field',
         'isonic-analytics',
-        'isonic_sf_section',
+        'isonic_sf_primary_section',
         [ 
-            'option_name' => 'isonic_sf_security_token',
+            'option_name' => 'isonic_sf_primary_security_token',
+            'description' => 'Security Token (reçu par email)',
+        ]
+    );
+    
+    // SALESFORCE SECONDARY ORG SECTION (Ancienne org - Migration)
+    add_settings_section(
+        'isonic_sf_secondary_section',
+        '🔄 Salesforce SECONDARY (Ancienne Org - Migration)',
+        'isonic_analytics_salesforce_secondary_section_callback',
+        'isonic-analytics'
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_enabled',
+        'Activer Secondary Org',
+        'isonic_analytics_checkbox_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_enabled',
+            'description' => 'Décocher quand la migration est terminée',
+        ]
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_instance_url',
+        'Instance URL',
+        'isonic_analytics_text_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_instance_url', 
+            'placeholder' => 'https://isonic.lightning.force.com',
+            'description' => 'URL de l\'ancienne org Salesforce',
+        ]
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_consumer_key',
+        'Consumer Key',
+        'isonic_analytics_text_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_consumer_key',
+            'description' => 'Consumer Key de la Connected App',
+        ]
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_consumer_secret',
+        'Consumer Secret',
+        'isonic_analytics_password_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_consumer_secret',
+            'description' => 'Consumer Secret de la Connected App',
+        ]
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_username',
+        'Username',
+        'isonic_analytics_text_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_username',
+            'placeholder' => 'j.miezin@isonic.fr',
+            'description' => 'Email de l\'utilisateur Salesforce',
+        ]
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_password',
+        'Password',
+        'isonic_analytics_password_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_password',
+            'description' => 'Mot de passe Salesforce (sans le Security Token)',
+        ]
+    );
+    
+    add_settings_field(
+        'isonic_sf_secondary_security_token',
+        'Security Token',
+        'isonic_analytics_password_field',
+        'isonic-analytics',
+        'isonic_sf_secondary_section',
+        [ 
+            'option_name' => 'isonic_sf_secondary_security_token',
             'description' => 'Security Token (reçu par email)',
         ]
     );
@@ -334,8 +503,13 @@ function isonic_analytics_matomo_section_callback() {
     echo '<p>Configurez l\'accès à l\'API Matomo pour récupérer les données analytics des visiteurs.</p>';
 }
 
-function isonic_analytics_salesforce_section_callback() {
-    echo '<p>Configurez la Connected App Salesforce pour l\'envoi automatique des Leads enrichis.</p>';
+function isonic_analytics_salesforce_primary_section_callback() {
+    echo '<p>📍 Org de <strong>production</strong> (isonic-ai) - Campaigns : Site web (701Jv...) et Contenu pédagogique (701Jv...)</p>';
+}
+
+function isonic_analytics_salesforce_secondary_section_callback() {
+    echo '<p>⚠️ Ancienne org <strong>en migration</strong> (isonic) - Campaigns : Site web (7013X...) et Contenu pédagogique (701IV...)</p>';
+    echo '<p><em>Décochez "Activer Secondary Org" une fois la migration terminée.</em></p>';
 }
 
 function isonic_analytics_text_field( $args ) {
